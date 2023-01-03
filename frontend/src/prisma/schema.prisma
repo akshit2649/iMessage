@@ -1,15 +1,16 @@
+generator client {
+    provider = "prisma-client-js"
+    //   binaryTargets   = ["native", "darwin"]
+}
+
 datasource db {
     provider = "mongodb"
     url      = env("MONGODB_URI")
 }
 
-generator client {
-    provider = "prisma-client-js"
-}
-
 model Account {
     id                String  @id @default(auto()) @map("_id") @db.ObjectId
-    userId            String  @db.ObjectId
+    userId            String
     type              String
     provider          String
     providerAccountId String
@@ -20,8 +21,7 @@ model Account {
     scope             String?
     id_token          String? @db.String
     session_state     String?
-
-    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@unique([provider, providerAccountId])
 }
@@ -29,7 +29,7 @@ model Account {
 model Session {
     id           String   @id @default(auto()) @map("_id") @db.ObjectId
     sessionToken String   @unique
-    userId       String   @db.ObjectId
+    userId       String
     expires      DateTime
     user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -40,8 +40,11 @@ model User {
     email         String?   @unique
     emailVerified DateTime?
     image         String?
+    username      String?   @unique
     accounts      Account[]
     sessions      Session[]
+    createdAt     DateTime  @default(now())
+    updatedAt     DateTime  @updatedAt
 }
 
 model VerificationToken {
