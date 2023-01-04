@@ -28,7 +28,6 @@ async function main() {
   await server.start();
   server.applyMiddleware({
     app,
-    path: "/",
   });
 
   await new Promise<void>((resolve) =>
