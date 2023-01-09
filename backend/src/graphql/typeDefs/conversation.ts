@@ -12,9 +12,9 @@ const typeDefs = gql`
 
   type Conversation {
     id: String
-    # latestMessage: Message
+    latestMessage: Message
     participants: [Participant]
-    createAt: Data
+    createAt: Date
     updateAt: Date
   }
 
