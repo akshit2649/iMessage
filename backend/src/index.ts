@@ -21,19 +21,13 @@ async function main() {
   dotenv.config();
   const app = express();
   const httpServer = http.createServer(app);
-
-  // Create our WebSocket server using the HTTP server we just set up.
   const wsServer = new WebSocketServer({
     server: httpServer,
     path: "/graphql/subscriptions",
   });
-
   const schema = makeExecutableSchema({ typeDefs, resolvers });
-
   const prisma = new PrismaClient();
   const pubsub = new PubSub();
-
-  // Save the returned server's info so we can shutdown this server later
   const serverCleanup = useServer(
     {
       schema,
@@ -48,12 +42,10 @@ async function main() {
     },
     wsServer
   );
-
   const corsOptions = {
     origin: process.env.CLIENT_ORIGIN,
     credentials: true,
   };
-
   const server = new ApolloServer({
     schema,
     csrfPrevention: true,
