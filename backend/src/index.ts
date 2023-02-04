@@ -1,8 +1,6 @@
-import { ApolloServer } from "apollo-server-express";
-import {
-  ApolloServerPluginDrainHttpServer,
-  ApolloServerPluginLandingPageLocalDefault,
-} from "apollo-server-core";
+import { ApolloServer } from "@apollo/server";
+import { expressMiddleware } from "@apollo/server/express4";
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import express from "express";
 import http from "http";
 import typeDefs from "./graphql/typeDefs";
@@ -16,6 +14,8 @@ import { Session } from "./util/types";
 import { WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/lib/use/ws";
 import { PubSub } from "graphql-subscriptions";
+import cors from "cors";
+import { json } from "body-parser";
 
 async function main() {
   dotenv.config();
@@ -49,11 +49,6 @@ async function main() {
   const server = new ApolloServer({
     schema,
     csrfPrevention: true,
-    cache: "bounded",
-    context: async ({ req, res }): Promise<GraphQLContext> => {
-      const session = (await getSession({ req })) as Session;
-      return { session, prisma, pubsub };
-    },
     plugins: [
       ApolloServerPluginDrainHttpServer({ httpServer }),
       {
@@ -65,20 +60,30 @@ async function main() {
           };
         },
       },
-      ApolloServerPluginLandingPageLocalDefault({ embed: true }),
     ],
   });
 
   await server.start();
-  server.applyMiddleware({
-    app,
-    cors: corsOptions,
-  });
+
+  app.use(
+    "/graphql",
+    cors<cors.CorsRequest>(corsOptions),
+    json(),
+    expressMiddleware(server, {
+      context: async ({ req }): Promise<GraphQLContext> => {
+        const session = await getSession({ req });
+
+        return { session: session as Session, prisma, pubsub };
+      },
+    })
+  );
+
+  const PORT = 4000;
 
   await new Promise<void>((resolve) =>
-    httpServer.listen({ port: 4000 }, resolve)
+    httpServer.listen({ port: PORT }, resolve)
   );
-  console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`);
+  console.log(`🚀 Server ready at http://localhost:${PORT}/graphql`);
 }
 
 main().catch((err) => console.log(err));
