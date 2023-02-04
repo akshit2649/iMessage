@@ -5,7 +5,7 @@ import React from "react";
 import ConversationOperations from "../../../../graphql/operations/conversation";
 import { formatUsernames } from "../../../../util/functions";
 import { ConversationsData } from "../../../../util/types";
-import SkeletonLoader from "../../../common/SkeletonLoader";
+// import SkeletonLoader from "../../../common/SkeletonLoader";
 
 interface MessagesHeaderProps {
   userId: string;
@@ -49,7 +49,7 @@ const MessagesHeader: React.FC<MessagesHeaderProps> = ({
       >
         Back
       </Button>
-      {loading && <SkeletonLoader count={1} height="30px" width="320px" />}
+      {/* {loading && <SkeletonLoader count={1} height="30px" width="320px" />} */}
       {!conversation && !loading && <Text>Conversation Not Found</Text>}
       {conversation && (
         <Stack direction="row">
